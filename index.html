@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Order check"><link rel="manifest" href="manifest.webmanifest"><title>The Sweet Oven: order check (offline)</title>
+<style>
+:root{--bg:#FFF9E9;--ink:#1F2A24;--muted:#55605A;--green:#0F4A34;--red:#B8281F;--amber:#9A6700;--line:#E6DCC0;--card:#FFFDF6;color-scheme:light}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:16px}
+main{max-width:560px;margin:0 auto;display:grid;gap:16px}
+h1{font-size:1.4rem;margin:0}h2{font-size:1.05rem;margin:0 0 8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;display:grid;gap:10px}
+button,input,textarea{font:inherit}
+button{padding:12px 16px;border-radius:6px;border:0;background:var(--green);color:#fff;font-weight:700;cursor:pointer}
+button.alt{background:transparent;color:var(--green);border:1px solid var(--green)}
+input[type=text],textarea{width:100%;padding:12px;border:1px solid #C9BE9F;border-radius:6px;background:#fff;color:var(--ink);text-transform:uppercase}
+textarea{text-transform:none;min-height:90px;font-size:.85rem}
+video{width:100%;border-radius:6px;background:#000}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+#res{border-radius:8px;padding:20px;text-align:center;display:grid;gap:6px}
+#res.ok{background:#DDF3E4;border:3px solid #0F7A3E}#res.bad{background:#FBE0DD;border:3px solid var(--red)}#res.warn{background:#FFF0CC;border:3px solid var(--amber)}
+#res .big{font-size:2.2rem;font-weight:800;line-height:1.1}#res .code{font-size:1.6rem;letter-spacing:.08em;font-weight:700}
+.small{color:var(--muted);font-size:.9rem}
+</style></head><body><main>
+<h1>The Sweet Oven: order check</h1>
+<p class="small" style="margin:0">Works with no internet. It checks order numbers against the list loaded below.</p>
+
+<div class="card">
+  <h2>Check an order</h2>
+  <div class="row"><button id="pastechk" type="button">Paste scanned code and check</button><button id="scan" class="alt" type="button">Scan with this page's camera</button><button id="stop" class="alt" type="button" hidden>Stop camera</button></div>
+  <video id="v" playsinline muted hidden></video>
+  <p class="small" id="scanmsg" hidden></p>
+  <p class="small"><b>iPhone:</b> open the normal Camera app, point it at the ticket, then press and hold the banner and choose Copy. Come back here and press "Paste scanned code and check". This works with no internet.</p>
+  <label class="small" for="code">Quick check: type the 4 characters after SO-</label>
+  <div class="row"><span style="font-size:1.6rem;font-weight:800;align-self:center">SO-</span><input id="code" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" style="flex:1;min-width:0;font-size:1.6rem;letter-spacing:.12em;font-weight:700"><button id="chk" type="button">Check</button></div>
+  <label class="small"><input id="auto" type="checkbox" checked> Mark as collected automatically when valid (fastest). Press Undo if it was a mistake.</label>
+</div>
+
+<div id="res" hidden></div>
+<div class="row"><button id="paid" type="button" hidden>Mark as collected and paid</button><button id="undo" class="alt" type="button" hidden>Undo last</button></div>
+
+<div class="card">
+  <h2>Order list</h2>
+  <p class="small" id="info"></p>
+  <label class="small" for="json">Paste the order list, then press Load</label>
+  <textarea id="json" spellcheck="false"></textarea>
+  <div class="row"><button id="load" type="button">Load list</button><button id="exp" class="alt" type="button">Show collected orders</button></div>
+  <p class="small" id="msg" role="status"></p>
+</div>
+</main>
+<script>
+(function(){
+  var KEY='sweetoven_orders_v1', DONE='sweetoven_collected_v1';
+  function get(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}}
+  function put(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+  var orders=get(KEY,{}), done=get(DONE,{}), cur=null;
+  var $=function(i){return document.getElementById(i)};
+  function info(){var n=Object.keys(orders).length;$('info').textContent=n?n+' orders loaded. '+Object.keys(done).length+' marked collected on this device.':'No orders loaded yet. Anything you check will show as not found.'}
+  info();
+  function norm(t){var m=String(t).toUpperCase().match(/SO-[A-Z0-9]{4}/);return m?m[0]:String(t).toUpperCase().trim()}
+  function show(cls,big,code,lines){var r=$('res');r.className=cls;r.hidden=false;r.textContent='';
+    var b=document.createElement('div');b.className='big';b.textContent=big;r.appendChild(b);
+    if(code){var c=document.createElement('div');c.className='code';c.textContent=code;r.appendChild(c)}
+    (lines||[]).forEach(function(l){var p=document.createElement('div');p.textContent=l;r.appendChild(p)})}
+  function check(raw){var code=norm(raw);cur=null;$('paid').hidden=true;
+    if(!/^SO-[A-Z0-9]{4}$/.test(code)){show('bad','NOT VALID','',['That is not an order number.']);return}
+    var o=orders[code];
+    if(!o){show('bad','NOT FOUND',code,['Not on the list. Do not hand over goods without checking.']);return}
+    var items=[];if(o.singles)items.push(o.singles+' x One Welsh cake');if(o.pack4)items.push(o.pack4+' x Pack of 4');if(o.pack6)items.push(o.pack6+' x Pack of 6');
+    var lines=[o.name?o.name:'',o.day||'',items.join(', '),'Total £'+Number(o.total).toFixed(2)].filter(Boolean);
+    if(done[code]){show('warn','ALREADY COLLECTED',code,lines.concat(['Marked collected on this device at '+done[code]]));return}
+    show('ok','VALID',code,lines);cur=code;$('paid').hidden=false}
+  $('pastechk').onclick=function(){var sm=$('scanmsg');sm.hidden=false;
+    if(!navigator.clipboard||!navigator.clipboard.readText){sm.textContent='Paste is not available here. Press and hold the box below, choose Paste, then press Check.';$('code').focus();return}
+    navigator.clipboard.readText().then(function(t){run(t)}).catch(function(){sm.textContent='Paste was not allowed. Press and hold the box below, choose Paste, then press Check.';$('code').focus()})};
+  if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(function(){})}
+  function quick(){var v=$('code').value.toUpperCase().replace(/[^A-Z0-9]/g,'');if(/^SO/.test(v)&&v.length>4&&v.length<9)v=v.slice(2);return v}
+  function go(){var v=quick();if(v.length===4)run('SO-'+v);else if($('code').value.length>12)run($('code').value)}
+  function run(t){check(t);if($('auto').checked&&cur){var c=cur;done[c]=new Date().toLocaleString('en-GB');put(DONE,done);info();last=c;$('undo').hidden=false;$('paid').hidden=true;cur=null;var r=$('res');r.className='ok';r.firstChild.textContent='VALID, MARKED COLLECTED'}
+    $('code').value='';$('code').focus()}
+  var last=null;
+  $('undo').onclick=function(){if(last){delete done[last];put(DONE,done);info();var c=last;last=null;$('undo').hidden=true;check(c)}};
+  $('code').addEventListener('input',go);
+  $('chk').onclick=function(){var v=quick();run(v.length===4?'SO-'+v:$('code').value)};
+  $('paid').onclick=function(){if(!cur)return;done[cur]=new Date().toLocaleString('en-GB');put(DONE,done);var c=cur;info();check(c)};
+  $('load').onclick=function(){try{var d=JSON.parse($('json').value);var m={};(Array.isArray(d)?d:[]).forEach(function(o){if(o&&o.code)m[String(o.code).toUpperCase()]=o});
+    if(!Object.keys(m).length)throw 0;orders=m;put(KEY,orders);$('json').value='';$('msg').textContent='Loaded '+Object.keys(m).length+' orders.';info()}catch(e){$('msg').textContent='That did not look like an order list. Paste the full order list exactly as you received it.'}};
+  $('exp').onclick=function(){var k=Object.keys(done);$('json').value=k.length?k.join('\n'):'';$('msg').textContent=k.length?'These orders were collected on this device. Keep this list for your records.':'Nothing marked collected yet.'};
+  // camera scan, only where the browser can decode QR codes itself
+  var stream=null,timer=null;
+  function stopCam(){if(timer)clearInterval(timer);timer=null;if(stream)stream.getTracks().forEach(function(t){t.stop()});stream=null;$('v').hidden=true;$('stop').hidden=true;$('scan').hidden=false}
+  $('stop').onclick=stopCam;
+  $('scan').onclick=function(){
+    var sm=$('scanmsg');sm.hidden=false;
+    if(!('BarcodeDetector' in window)||!navigator.mediaDevices){sm.textContent='This browser cannot scan QR codes itself. Use your phone camera to read the code, then type the order number (SO- and four characters) below.';return}
+    var det;try{det=new BarcodeDetector({formats:['qr_code']})}catch(e){sm.textContent='QR scanning is not available here. Type the order number instead.';return}
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}).then(function(s){stream=s;var v=$('v');v.srcObject=s;v.hidden=false;v.play();$('stop').hidden=false;$('scan').hidden=true;sm.textContent='Point the camera at the QR code.';
+      timer=setInterval(function(){det.detect(v).then(function(r){if(r&&r.length){var t=r[0].rawValue;stopCam();sm.hidden=true;run(t)}}).catch(function(){})},400)}).catch(function(){sm.textContent='Camera not allowed. Type the order number instead.'})};
+})();
+</script></body></html>
