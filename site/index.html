@@ -1,0 +1,212 @@
+<title>The Sweet Oven</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Serif+Display&display=swap">
+<style>
+/* One deliberate light look: cream page, deep green bands, red used sparingly for dates. */
+:root {
+  --bg: #FFF9E9; --ink: #1F2A24; --muted: #55605A; --green: #0F4A34; --green-ink: #F4EEDC;
+  --red: #B8281F; --line: #E6DCC0; --card: #FFFDF6;
+  --serif: "DM Serif Display", Georgia, serif; --sans: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 17px; line-height: 1.6; }
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+.w { width: 100%; max-width: 1040px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2 { font-family: var(--serif); font-weight: 400; margin: 0; line-height: 1.08; text-wrap: balance; }
+h1 { font-size: clamp(2.4rem, 6vw, 4.2rem); }
+h2 { font-size: clamp(1.8rem, 4vw, 2.6rem); }
+p { margin: 0; }
+
+nav .w { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 10px; }
+nav img { height: 84px; width: auto; }
+nav ul { display: flex; gap: 22px; list-style: none; margin: 0; padding: 0; font-weight: 500; font-size: .95rem; }
+nav a { text-decoration: none; }
+nav a:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+.hero { position: relative; }
+.hero img { width: 100%; height: auto; }
+.hero-text { position: absolute; left: max(16px, calc((100% - 1040px) / 2 + 16px)); top: 50%; transform: translateY(-50%); max-width: min(440px, 44%); display: grid; gap: 18px; }
+.hero-text p { font-size: 1.15rem; color: #2E3A33; max-width: 34ch; }
+.btn { justify-self: start; background: var(--green); color: var(--green-ink); text-decoration: none; font-weight: 700; padding: 13px 24px; border-radius: 4px; }
+
+.when { background: var(--green); color: var(--green-ink); }
+.when .w { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 6px 28px; padding-block: 22px; text-align: center; }
+.when b { font-family: var(--serif); font-weight: 400; font-size: clamp(1.4rem, 3vw, 2rem); }
+.when span { opacity: .85; }
+
+section { padding-block: 72px; }
+.menu { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+.item { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 24px 20px; display: grid; gap: 4px; }
+.item small { color: var(--muted); font-size: .8rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+.item strong { font-family: var(--serif); font-weight: 400; font-size: 2.6rem; color: var(--green); line-height: 1.1; }
+.note { color: var(--muted); margin-top: 14px; }
+
+.split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; align-items: center; }
+.split img { border-radius: 6px; width: 100%; height: auto; }
+.split .t { display: grid; gap: 16px; }
+.t p { color: var(--muted); max-width: 46ch; }
+.rev { background: #F6EED6; }
+
+.allergen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 28px; align-items: start; border-top: 2px solid var(--ink); padding-top: 28px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.chips span { background: var(--ink); color: var(--bg); font-weight: 700; font-size: .85rem; padding: 4px 14px; border-radius: 999px; }
+
+.navbtn { background: var(--green); color: var(--green-ink); padding: 8px 16px; border-radius: 4px; }
+.page { padding-block: 56px 72px; }
+.narrow { max-width: 720px; }
+.ph { font-size: clamp(2.2rem, 5vw, 3.4rem); margin-bottom: 16px; }
+.lead { color: var(--muted); font-size: 1.1rem; max-width: 56ch; }
+.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 32px; }
+.facts > div { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 20px; }
+.facts h3 { margin: 0 0 6px; font-size: 1.05rem; }
+.facts p { color: var(--muted); font-size: .95rem; }
+.form { display: grid; gap: 24px; margin-top: 28px; }
+fieldset { border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; margin: 0; background: var(--card); display: grid; gap: 14px; min-width: 0; }
+legend { font-family: var(--serif); font-size: 1.3rem; padding: 0 8px; }
+.line { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.line small { display: block; color: var(--muted); }
+.step { display: flex; align-items: center; gap: 12px; }
+.step button { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--green); background: transparent; color: var(--green); font-size: 1.3rem; cursor: pointer; }
+.step output { min-width: 1.6em; text-align: center; font-weight: 700; font-size: 1.1rem; }
+.total { border-top: 1px dashed var(--line); padding-top: 12px; }
+label { display: grid; gap: 6px; font-weight: 500; }
+.radio { display: flex; align-items: center; gap: 10px; }
+input:not([type=radio]), textarea { font: inherit; padding: 11px 12px; border: 1px solid #C9BE9F; border-radius: 4px; background: #fff; color: var(--ink); width: 100%; }
+input:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible { outline: 3px solid var(--red); outline-offset: 2px; }
+.err { color: var(--red); font-weight: 700; }
+button.btn { border: 0; font: inherit; font-weight: 700; cursor: pointer; justify-self: start; }
+button.btn:disabled { opacity: .5; cursor: default; }
+button.btn.s { }
+.code { display: inline-block; font-family: var(--serif); font-size: 2.6rem; letter-spacing: .08em; color: var(--green); margin: 6px 0 10px; }
+.qr { margin-top: 18px; display: grid; gap: 8px; justify-items: start; }
+#qrbox { background: #fff; padding: 10px; border-radius: 4px; border: 1px solid var(--line); }
+.done { margin-top: 28px; border: 2px solid var(--green); border-radius: 6px; padding: 24px; }
+footer { background: var(--green); color: var(--green-ink); padding-block: 28px; text-align: center; font-size: .9rem; }
+
+@media (max-width: 760px) {
+  .facts { grid-template-columns: 1fr; }
+  nav ul { gap: 10px; }
+  nav ul { gap: 14px; font-size: .85rem; }
+  nav img { height: 64px; }
+  .hero-text { position: static; transform: none; max-width: none; padding: 28px 16px 8px; }
+  .hero { display: flex; flex-direction: column-reverse; }
+  .hero-text { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .menu { grid-template-columns: 1fr; }
+  .split, .allergen { grid-template-columns: 1fr; gap: 24px; }
+  section { padding-block: 48px; }
+}
+</style>
+
+<nav>
+  <div class="w">
+    <a href="#" aria-label="The Sweet Oven"><img src="logo-sweet-crop.png" alt="The Sweet Oven" width="875" height="688"></a>
+    <ul><li><a href="#menu">Menu</a></li><li><a href="#about">About</a></li><li><a href="#order" class="navbtn">Find us</a></li></ul>
+  </div>
+</nav>
+
+<div id="v-home">
+<header class="hero" id="top">
+  <img src="hero.jpg" alt="A stack of Welsh cakes on a cream plate with two more beside it" width="1800" height="771">
+  <div class="hero-text">
+    <h1>Welsh cakes, freshly baked.</h1>
+    <p>Small, spiced and full of sultanas. Baked in Dunfermline, with more sweet bakes to come.</p>
+    <a class="btn" href="#order">Find us at school</a>
+  </div>
+</header>
+
+<div class="when" id="find">
+  <div class="w"><b>Tuesday 17 &amp; Thursday 19 November</b><span>Find us at school</span></div>
+</div>
+
+<section id="menu">
+  <div class="w">
+    <h2>Menu</h2>
+    <div class="menu">
+      <div class="item"><small>One Welsh cake</small><strong>£1.00</strong></div>
+      <div class="item"><small>Pack of 4</small><strong>£3.50</strong></div>
+      <div class="item"><small>Pack of 6</small><strong>£5.00</strong></div>
+    </div>
+    <p class="note">More sweet bakes coming soon.</p>
+  </div>
+</section>
+
+<section class="rev">
+  <div class="w split">
+    <img src="closeup.jpg" alt="A Welsh cake broken open, showing sultanas and a sugared top" width="1200" height="675">
+    <div class="t">
+      <h2>Cakes on the stone</h2>
+      <p>Welsh cakes, or <i>pice ar y maen</i>, are small, round and spiced with cinnamon, with sultanas through the middle. They are cooked on a griddle, not in an oven.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="w split">
+    <div class="t">
+      <h2>Ready to take away</h2>
+      <p>Every pack is bagged and tied, ready to carry home or give to someone.</p>
+    </div>
+    <img src="pack-4.jpg" alt="Four Welsh cakes in a clear bag tied with twine" width="1100" height="733">
+  </div>
+</section>
+
+<section id="allergens" style="padding-top:0">
+  <div class="w allergen">
+    <h2>Allergens</h2>
+    <div>
+      <div class="chips"><span>Wheat (gluten)</span><span>Milk</span><span>Egg</span></div>
+      <p class="note" style="margin-top:0">Ingredients: self-raising wheat flour, butter, sultanas, sugar, egg, milk, cinnamon, salt. May contain traces of other allergens. If you have an allergy, ask us before you buy.</p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<div id="v-about" hidden>
+  <section class="page">
+    <div class="w narrow">
+      <h1 class="ph">About The Sweet Oven</h1>
+      <p class="lead">The Sweet Oven is a bakery in Dunfermline. We start with Welsh cakes, and we plan to add other sweet bakes over time.</p>
+      <div class="facts">
+        <div><h3>Small batches</h3><p>Everything is baked in small batches, so each cake gets the same attention.</p></div>
+        <div><h3>Simple recipe</h3><p>Flour, butter, sugar, sultanas, egg, milk and cinnamon, cooked on a griddle.</p></div>
+        <div><h3>Clear allergen info</h3><p>Every pack comes with its ingredients and allergens listed, so you know what you are buying.</p></div>
+      </div>
+      <p class="lead" style="margin-top:36px">Find us at school on Tuesday 17 and Thursday 19 November.</p>
+      <a class="btn" href="#order" style="margin-top:20px;display:inline-block">Find us at school</a>
+    </div>
+  </section>
+</div>
+
+<div id="v-order" hidden>
+  <section class="page">
+    <div class="w narrow">
+      <h1 class="ph">Find us at school</h1>
+      <p class="lead">No need to order ahead. Come to our stall and buy straight from the table while stock lasts.</p>
+      <div class="facts">
+        <div><h3>When</h3><p>Tuesday 17 and Thursday 19 November.</p></div>
+        <div><h3>What</h3><p>One Welsh cake £1.00, pack of 4 £3.50, pack of 6 £5.00.</p></div>
+        <div><h3>Allergens</h3><p>Contains wheat (gluten), milk and egg. May contain traces of other allergens. Best within 5 days of baking.</p></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>The Sweet Oven &middot; Dunfermline</footer>
+
+<script>
+(function () {
+  var views = { home: document.getElementById('v-home'), about: document.getElementById('v-about'), order: document.getElementById('v-order') };
+  function route() {
+    var h = location.hash.slice(1);
+    var v = (h === 'about' || h === 'order') ? h : 'home';
+    for (var k in views) views[k].hidden = (k !== v);
+    if (v === 'home' && h && document.getElementById(h)) document.getElementById(h).scrollIntoView();
+    else window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', route); route();
+})();
+</script>
